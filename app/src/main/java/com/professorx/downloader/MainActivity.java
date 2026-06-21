@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                     req.addOption("-f", "best");
                 }
 
-                YoutubeDL.getInstance().execute(req, (progress, eta, line) -> {
+                YoutubeDL.getInstance().execute(req,null,(progress, eta, line) -> {
                     mainHandler.post(() -> {
                         progressBar.setProgress((int) progress);
                         showStatus("Downloading: " + (int) progress + "%");
