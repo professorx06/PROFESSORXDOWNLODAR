@@ -1,1 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_gradient">
 
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
+        <com.google.android.material.appbar.MaterialToolbar
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="Professor X"
+            app:titleTextColor="#FFFFFF"
+            app:subtitle="Downloader"
+            app:subtitleTextColor="#B0C4DE"
+            android:background="@android:color/transparent"/>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout android:id="@+id/layout_home"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingHorizontal="24dp">
+
+            <TextView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:text="⬇"
+                android:textSize="36sp"
+                android:gravity="center"
+                android:background="@drawable/bg_icon_circle"
+                android:layout_marginBottom="24dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#1A1A3E"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="12dp"
+                app:strokeColor="#3D3D6B"
+                app:strokeWidth="1dp"
+                android:layout_marginBottom="20dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        app:boxStrokeColor="#FF9F1C"
+                        app:boxBackgroundColor="#0D0D2B"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/input_link"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="YouTube ya Instagram link paste karein"
+                            android:textColor="#FFFFFF"
+                            android:textColorHint="#555588"
+                            android:inputType="textUri"
+                            android:padding="14dp"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp">
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="▶ YouTube"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            app:chipBackgroundColor="#CC0000"
+                            app:chipCornerRadius="8dp"/>
+                        <com.google.android.material.chip.Chip
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📸 Instagram"
+                            android:textColor="#FFFFFF"
+                            android:textSize="11sp"
+                            app:chipBackgroundColor="#833AB4"
+                            app:chipCornerRadius="8dp"/>
+                    </com.google.android.material.chip.ChipGroup>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_download"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Download"
+                android:textSize="16sp"
+                android:textColor="#1A0033"
+                app:backgroundTint="#FF9F1C"
+                app:cornerRadius="16dp"/>
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progress_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                app:indicatorColor="#FF9F1C"
+                app:trackColor="#1A1A3E"
+                app:trackCornerRadius="4dp"/>
+
+            <TextView android:id="@+id/tv_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="#B0C4DE"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <LinearLayout android:id="@+id/layout_history"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Download History"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:layout_marginBottom="16dp"/>
+
+            <TextView android:id="@+id/tv_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Abhi koi download nahi hua&#10;Pehle kuch download karein!"
+                android:textColor="#555588"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:layout_marginTop="60dp"
+                android:visibility="gone"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_history"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="16dp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="#0D0D2B"
+        app:menu="@menu/bottom_nav_menu"
+        app:itemIconTint="@color/text_secondary"
+        app:itemTextColor="@color/text_secondary"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
