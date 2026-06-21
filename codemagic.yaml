@@ -1,0 +1,15 @@
+workflows:
+  android-build:
+    name: Android APK Build
+
+    environment:
+      java: 17
+
+    scripts:
+      - name: Build APK
+        script: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+    artifacts:
+      - app/build/outputs/apk/release/*.apk
