@@ -12,18 +12,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.progressindicator.LinearProgressIndicator;
 import com.google.android.material.textfield.TextInputEditText;
 import com.yausername.youtubedl_android.YoutubeDL;
 import com.yausername.youtubedl_android.YoutubeDLRequest;
-import com.yausername.youtubedl_android.YoutubeDLResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -34,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout layoutHome, layoutHistory;
     private RecyclerView recyclerHistory;
     private TextView tvStatus, tvEmpty;
-    private ProgressBar progressBar;
+    private LinearProgressIndicator progressBar;
     private BottomNavigationView bottomNav;
     private HistoryAdapter historyAdapter;
     private List<DownloadItem> historyList = new ArrayList<>();
@@ -46,35 +43,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        prefs = getSharedPreferences("professor_x_prefs", MODE_PRIVATE);
+        prefs = getSharedPreferences("px_prefs", MODE_PRIVATE);
         isDarkMode = prefs.getBoolean("dark_mode", true);
         applyTheme(isDarkMode);
-
         setContentView(R.layout.activity_main);
 
-        // Initialize yt-dlp
-        try {
-            YoutubeDL.getInstance().init(getApplication());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        try { YoutubeDL.getInstance().init(getApplication()); }
+        catch (Exception e) { e.printStackTrace(); }
 
         initViews();
         loadHistory();
         setupListeners();
+
+        if (getIntent().getAction() != null &&
+            getIntent().getAction().equals(android.content.Intent.ACTION_SEND)) {
+            String sharedText = getIntent().getStringExtra(android.content.Intent.EXTRA_TEXT);
+            if (sharedText != null) inputLink.setText(sharedText.trim());
+        }
     }
 
     private void initViews() {
-        inputLink     = findViewById(R.id.input_link);
-        btnDownload   = findViewById(R.id.btn_download);
-        layoutHome    = findViewById(R.id.layout_home);
-        layoutHistory = findViewById(R.id.layout_history);
+        inputLink       = findViewById(R.id.input_link);
+        btnDownload     = findViewById(R.id.btn_download);
+        layoutHome      = findViewById(R.id.layout_home);
+        layoutHistory   = findViewById(R.id.layout_history);
         recyclerHistory = findViewById(R.id.recycler_history);
-        tvStatus      = findViewById(R.id.tv_status);
-        tvEmpty       = findViewById(R.id.tv_empty);
-        progressBar   = findViewById(R.id.progress_bar);
-        bottomNav     = findViewById(R.id.bottom_nav);
+        tvStatus        = findViewById(R.id.tv_status);
+        tvEmpty         = findViewById(R.id.tv_empty);
+        progressBar     = findViewById(R.id.progress_bar);
+        bottomNav       = findViewById(R.id.bottom_nav);
 
         historyAdapter = new HistoryAdapter(historyList);
         recyclerHistory.setLayoutManager(new LinearLayoutManager(this));
@@ -83,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupListeners() {
         btnDownload.setOnClickListener(v -> startDownload());
-
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_home) {
@@ -102,55 +98,42 @@ public class MainActivity extends AppCompatActivity {
 
     private void startDownload() {
         String url = inputLink.getText().toString().trim();
-
-        if (url.isEmpty()) {
-            showStatus("Link daalna bhool gaye! 🤦", false);
-            return;
-        }
-
-        if (!isValidUrl(url)) {
-            showStatus("Sirf YouTube ya Instagram ka link daalein", false);
-            return;
-        }
+        if (url.isEmpty()) { showStatus("Link daalna bhool gaye! 🤦"); return; }
+        if (!isValidUrl(url)) { showStatus("Sirf YouTube ya Instagram link daalein"); return; }
 
         setDownloading(true);
-        showStatus("Download shuru ho raha hai...", true);
+        showStatus("Download shuru ho raha hai...");
 
         executor.execute(() -> {
             try {
-                File downloadDir = new File(getExternalFilesDir(null), "ProfessorX");
-                if (!downloadDir.exists()) downloadDir.mkdirs();
+                File dir = new File(getExternalFilesDir(null), "ProfessorX");
+                if (!dir.exists()) dir.mkdirs();
 
-                YoutubeDLRequest request = new YoutubeDLRequest(url);
-                request.addOption("-o", downloadDir.getAbsolutePath() + "/%(title)s.%(ext)s");
-                request.addOption("--no-playlist");
+                YoutubeDLRequest req = new YoutubeDLRequest(url);
+                req.addOption("-o", dir.getAbsolutePath() + "/%(title)s.%(ext)s");
+                req.addOption("--no-playlist");
 
-                // Best quality video + audio
                 if (url.contains("youtube.com") || url.contains("youtu.be")) {
-                    request.addOption("-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best");
-                    request.addOption("--merge-output-format", "mp4");
+                    req.addOption("-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best");
+                    req.addOption("--merge-output-format", "mp4");
                 } else {
-                    request.addOption("-f", "best");
+                    req.addOption("-f", "best");
                 }
 
-                mainHandler.post(() -> showStatus("Video process ho rahi hai...", true));
-
-                // FIXED: "download_task" String ID add kiya hai lambda se pehle taaki library crash na kare
-                YoutubeDLResponse response = YoutubeDL.getInstance().execute(request, "download_task", (progress, etaInSeconds, line) -> {
+                YoutubeDL.getInstance().execute(req, (progress, eta, line) -> {
                     mainHandler.post(() -> {
                         progressBar.setProgress((int) progress);
-                        showStatus("Downloading: " + (int) progress + "%", true);
+                        showStatus("Downloading: " + (int) progress + "%");
                     });
+                    return null;
                 });
 
-                // Save to history
-                String title = extractTitle(response.getOut());
                 String platform = url.contains("instagram") ? "Instagram" : "YouTube";
-                saveToHistory(title, url, platform);
+                saveToHistory("Downloaded Video", url, platform);
 
                 mainHandler.post(() -> {
                     setDownloading(false);
-                    showStatus("✅ Download complete! Gallery check karein", true);
+                    showStatus("✅ Download complete! Files app mein check karein");
                     inputLink.setText("");
                     loadHistory();
                 });
@@ -158,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
                 mainHandler.post(() -> {
                     setDownloading(false);
-                    showStatus("❌ Error: " + e.getMessage(), false);
+                    showStatus("❌ Error: " + e.getMessage());
                 });
             }
         });
@@ -169,80 +152,55 @@ public class MainActivity extends AppCompatActivity {
                url.contains("instagram.com");
     }
 
-    private String extractTitle(String output) {
-        if (output != null && !output.isEmpty()) {
-            String[] lines = output.split("\n");
-            for (String line : lines) {
-                if (line.contains("[download]") && line.contains("Destination")) {
-                    String[] parts = line.split("/");
-                    if (parts.length > 0) return parts[parts.length - 1];
-                }
-            }
-        }
-        return "Downloaded Video";
-    }
-
     private void saveToHistory(String title, String url, String platform) {
         try {
-            String historyJson = prefs.getString("history", "[]");
-            JSONArray array = new JSONArray(historyJson);
-
-            JSONObject item = new JSONObject();
-            item.put("title", title);
-            item.put("url", url);
-            item.put("platform", platform);
-            item.put("date", new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(new Date()));
-
-            // Latest first
-            JSONArray newArray = new JSONArray();
-            newArray.put(item);
-            for (int i = 0; i < Math.min(array.length(), 49); i++) {
-                newArray.put(array.get(i));
-            }
-
-            prefs.edit().putString("history", newArray.toString()).apply();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            JSONArray arr = new JSONArray(prefs.getString("history", "[]"));
+            JSONObject obj = new JSONObject();
+            obj.put("title", title);
+            obj.put("url", url);
+            obj.put("platform", platform);
+            obj.put("date", new SimpleDateFormat("dd MMM yyyy, hh:mm a",
+                Locale.getDefault()).format(new Date()));
+            JSONArray newArr = new JSONArray();
+            newArr.put(obj);
+            for (int i = 0; i < Math.min(arr.length(), 49); i++) newArr.put(arr.get(i));
+            prefs.edit().putString("history", newArr.toString()).apply();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void loadHistory() {
         historyList.clear();
         try {
-            String historyJson = prefs.getString("history", "[]");
-            JSONArray array = new JSONArray(historyJson);
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject obj = array.getJSONObject(i);
+            JSONArray arr = new JSONArray(prefs.getString("history", "[]"));
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject o = arr.getJSONObject(i);
                 historyList.add(new DownloadItem(
-                    obj.getString("title"),
-                    obj.getString("url"),
-                    obj.getString("platform"),
-                    obj.getString("date")
+                    o.getString("title"),
+                    o.getString("url"),
+                    o.getString("platform"),
+                    o.getString("date")
                 ));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
         if (historyAdapter != null) historyAdapter.notifyDataSetChanged();
         updateEmptyView();
     }
 
     private void updateEmptyView() {
-        if (tvEmpty != null) {
+        if (tvEmpty != null)
             tvEmpty.setVisibility(historyList.isEmpty() ? View.VISIBLE : View.GONE);
-        }
     }
 
-    private void showStatus(String msg, boolean show) {
+    private void showStatus(String msg) {
         tvStatus.setText(msg);
-        tvStatus.setVisibility(show ? View.VISIBLE : View.GONE);
+        tvStatus.setVisibility(View.VISIBLE);
     }
 
-    private void setDownloading(boolean downloading) {
-        btnDownload.setEnabled(!downloading);
-        progressBar.setVisibility(downloading ? View.VISIBLE : View.GONE);
-        if (!downloading) progressBar.setProgress(0);
-        btnDownload.setText(downloading ? "Downloading..." : "Download");
+    private void setDownloading(boolean d) {
+        btnDownload.setEnabled(!d);
+        progressBar.setVisibility(d ? View.VISIBLE : View.GONE);
+        if (!d) progressBar.setProgress(0);
+        btnDownload.setText(d ? "Downloading..." : "Download");
     }
 
     private void toggleTheme() {
@@ -254,8 +212,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void applyTheme(boolean dark) {
         AppCompatDelegate.setDefaultNightMode(
-            dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
-        );
+            dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
     }
             }
-                    
