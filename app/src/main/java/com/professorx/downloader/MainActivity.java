@@ -135,7 +135,8 @@ public class MainActivity extends AppCompatActivity {
 
                 mainHandler.post(() -> showStatus("Video process ho rahi hai...", true));
 
-                YoutubeDLResponse response = YoutubeDL.getInstance().execute(request, (progress, etaInSeconds, line) -> {
+                // FIXED: "download_task" String ID add kiya hai lambda se pehle taaki library crash na kare
+                YoutubeDLResponse response = YoutubeDL.getInstance().execute(request, "download_task", (progress, etaInSeconds, line) -> {
                     mainHandler.post(() -> {
                         progressBar.setProgress((int) progress);
                         showStatus("Downloading: " + (int) progress + "%", true);
@@ -256,4 +257,5 @@ public class MainActivity extends AppCompatActivity {
             dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
         );
     }
-}
+            }
+                    
