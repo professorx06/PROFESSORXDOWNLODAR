@@ -1,1 +1,11 @@
-
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#004e92</color>
+    <color name="colorPrimaryDark">#000428</color>
+    <color name="colorAccent">#FF9F1C</color>
+    <color name="youtube_red">#CC0000</color>
+    <color name="insta_pink">#833AB4</color>
+    <color name="bg_dark">#0D0D2B</color>
+    <color name="card_dark">#1A1A3E</color>
+    <color name="text_secondary">#B0C4DE</color>
+</resources>
